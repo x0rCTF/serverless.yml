@@ -34,7 +34,7 @@ We can create rules that self-trigger on an automated schedule in CloudWatch Eve
 
 ### Provider
 
-Here we will define our general settings. Such as the name of the platform we are working on, our region etc.
+This is where our general settings are defined.
 
 ```yml
 provider:
