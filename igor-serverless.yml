@@ -1,0 +1,91 @@
+service: schedule-function-2
+
+frameworkVersion: '3'
+
+# - Use Parameters
+params:
+  prod:
+    timer1: rate(1 minute)
+    # cronTime: cron(0/2 * ? * MON-SUN *)
+  dev:
+    timer1: rate(3 minutes)
+    # cronTime: cron(0/5 * ? * MON-SUN *)
+
+# - Create default settings for the functions
+provider:
+  name: aws
+  runtime: nodejs14.x
+  memorySize: 256
+  timeOut: 3
+  stage: dev
+  # - Create default IAM role for all functions. You don't need to create separate role for each function at this moment. 
+  iam:
+    role:
+      statements:
+        #create loggroup permissions
+        - Effect: Allow
+          Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+          Resource:
+            - 'Fn::Join':
+              - ':'
+              -
+                - 'arn:aws:logs'
+                - Ref: 'AWS::Region'
+                - Ref: 'AWS::AccountId'
+                - 'log-group:/aws/lambda/*:*:*'
+                
+        # create s3 permissions
+        - Effect: 'Allow'
+          Action:
+            - 's3:ListBucket'
+          Resource:
+            Fn::Join:
+              - ''
+              - - 'arn:aws:s3:::'
+                - Ref: ServerlessDeploymentBucket
+        - Effect: 'Allow'
+          Action:
+            - 's3:PutObject'
+          Resource:
+            Fn::Join:
+              - ''
+              - - 'arn:aws:s3:::'
+                - Ref: ServerlessDeploymentBucket
+                - '/*'
+
+functions:
+  rateHandler:    
+    handler: handler.hello
+    memorySize: 128 # function specific
+    events:
+      # Invoke Lambda function every schedTime minute
+      - schedule: 
+          rate: ${param:timer1} # variable reference
+          enabled: true
+
+  rateHandler2:    
+    handler: handler.hello
+    events:
+      # Invoke Lambda function with a variable time from another file
+      - schedule: 
+          rate: ${file(./myCustomFile.yml):globalSchedule} # variable reference
+          enabled: true        
+
+  # cronHandler:
+  #   handler: handler.run
+  #   events:
+  #     # Invoke Lambda function every cronTime minute from Mon-Sun
+  #     - schedule: cronTime
+
+  s3BucketHandler:
+    handler: s3bucket.eventHandler
+    events:	
+      - s3:
+          bucket: ${opt:stage}-s3bucket1 # variable reference
+          event: s3:ObjectCreated:*
+          rules:
+            # - prefix: uploads/
+            - suffix: .jpg
