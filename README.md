@@ -23,10 +23,10 @@ We used parameters to adapt the configuration based on the stage.
 # Parameters
 params:
   dev:
-    rate: rate(10 minutes) # trigger event every 2 minutes
+    rate: rate(10 minutes) # trigger event every 10 minutes
 #    cron: cron(0/10 * * * ? *)
   research:
-    rate: rate(15 minutes) # trigger event every 5 minutes
+    rate: rate(15 minutes) # trigger event every 15 minutes
 #    cron: cron(0/15 * * * ? *)
 ```
 
