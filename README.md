@@ -4,7 +4,7 @@
 
 From our previous classes, we learned that serverless.yml is the file where we define our **AWS Lambda Functions**, the events that trigger them and any AWS infracstructure resources they require.
 
-We created `serverless.yml` to satisfy the requirements of our task and im going to walk you through our code. 
+We created `serverless.yml` to meet the requirements of our task and im going to walk you through our code. 
 
 
 ### Root properties:
