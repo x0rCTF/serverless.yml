@@ -110,7 +110,7 @@ functions:
     description: Hello from Lambda!
     architecture: x86_64
     events:
-      - schedule: ${param:cron} 
+      - schedule: ${param:rate} 
 
 # Trigger: API Gateway
   currentTime:
