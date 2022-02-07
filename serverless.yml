@@ -1,0 +1,93 @@
+# Root properties
+service: Gr2
+frameworkVersion: '3'
+
+# Parameters
+params:
+  dev:
+    rate: rate(1 minute)
+    # cronTime: cron(0/5 * ? * MON-SUN *)
+  research:
+    rate: rate(10 minutes)
+    # cronTime: cron(0/5 * ? * MON-SUN *)
+
+provider:
+# General Settings  
+  name: aws
+  region: eu-west-1 # changed to eu-west-1 with high hopes for faster upload
+  profile: mentorship # this allows us to avoid --aws-profile in the syntax
+# General function settings  
+  runtime: nodejs14.x
+  memorySize: 256
+  timeout: 3
+  stage: dev
+# IAM ROLE
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+          Resource:
+            - 'Fn::Join':
+              - ':'
+              -
+                - 'arn:aws:logs'
+                - Ref: 'AWS::Region'
+                - Ref: 'AWS::AccountId'
+                - 'log-group:/aws/lambda/*:*:*'
+        - Effect: 'Allow'
+          Action:
+            - 's3:ListBucket'
+          Resource:
+            Fn::Join:
+              - ''
+              - - 'arn:aws:s3:::'
+                - Ref: ServerlessDeploymentBucket
+        - Effect: 'Allow'
+          Action:
+            - 's3:PutObject'
+          Resource:
+            Fn::Join:
+              - ''
+              - - 'arn:aws:s3:::'
+                - Ref: ServerlessDeploymentBucket
+                - '/*'
+
+
+# functions
+functions:
+  hello:
+    handler: func0.hello
+    runtime: nodejs14.x
+    memorySize: 128
+    timeout: 2
+    name: ${opt:stage}-hello
+    description: Hello from Lambda!
+    architecture: x86_64
+    events:
+      - schedule: ${param:rate} 
+
+# Trigger: API Gateway
+  currentTime:
+    handler: func1.endpoint
+    name: ${opt:stage}-CurrentTime
+    description: What's the time?
+    events:
+      - httpApi:
+          path: /time
+          method: get
+
+# # S3 Event
+  s3event:
+    handler: func2.upload
+    name: ${opt:stage}-s3event
+    description: Upload file to trigger the function
+    events:	
+      - s3:
+          bucket: ${opt:stage}-s3bucket1 
+          event: s3:ObjectCreated:*
+          rules:
+            - suffix: .jpg
