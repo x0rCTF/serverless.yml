@@ -11,7 +11,7 @@ We created `serverless.yml` to meet the requirements of our task and I am going 
 
 ### Root properties:
 These are the default root properties and we did not change anything here.
-```yml
+```bash
 service: schedule-function-2
 
 frameworkVersion: '3'
